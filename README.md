@@ -17,14 +17,16 @@ This project isn't going to show you how we work down to a T, more like how we l
 There is no written rule on what is best and what should  be, if you've found something better tell us, we're not
 dicks.
 
+### What is the meaning of life?
+42.
+
+## Stupid questions
+
 ### There are no stupid questions.
 
 If you're struggling to understand something, either be it in this project or not, ask - ensure you've done some research
 first. As a team and company we want to hear these questions as it makes us better as individuals and as a
 whole.
-
-### What is the meaning of life?
-42.
 
 ## Ok get on with it
 
