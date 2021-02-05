@@ -50,6 +50,9 @@ make life easy.
 The project will make `GET` requests to HackerNew's API and store the objects into a DB (dealers choice), and then show
 the objects via a web ui or terminal output (dealers choice).
 
+Retrieve, store, and present any and all information you see fit, there isn't a set way we want to store or see the
+objects from HackerNews.
+
 The project should be composed of three services ([Microservice Architecture
 pattern](https://microservices.io/patterns/microservices.html)), the services are as follows: Consumer, API, and Presenter.
 
