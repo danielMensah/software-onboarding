@@ -34,19 +34,17 @@ Fine. This project is going to define the specifications of a project that you'l
 Don't fret, it's mainly for us, we want to know what we're missing for new starters, what you might need, and what you might
 already know, **BONUS POINTS** (there are no points).
 
-In this project we'll cover **Golang** and **Docker**. Everything is to be done on a local machine no cloud account
-required.
+In this project we'll cover **Golang**, **Docker**, and **Docker-Compose**. Everything is to be done on a local machine
+no cloud account required.
 
 ### Install
 
-For installation, we'll assume you're running on a macOS machine as all devs use one (sorry PC master race). For an IDE
+For installation, everything can be controlled and installed via docker/docker-compose. For an IDE
 you  can choose anything to your liking, but GymShark offers a licence for IntelliJ Ultimate - it has some helpers that
 make life easy.
 
-* [brew](https://brew.sh/)
 * [Docker](https://www.docker.com/products/docker-desktop)
-* Go - `brew install go`
-* Redis - `brew install redis` - optional
+
 
 ### The Spec
 The project will make `GET` requests to HackerNew's API and store the objects into a DB (dealers choice), and then show
@@ -91,3 +89,17 @@ be as simple as an inmemory hashmap
 The Presenter will communicate with the API in order to display top stories that are stored in the DB. 
 
 The data that is returned should be displayed either in a web UI or just simply printing out to the terminal.
+
+### Project structure
+There is no exact structure we all work with at GS, it's project specific, with that said, we do have some folders we
+like to use for ease of navigation and context. Folders such as pkg, internal, and cmd are the common ones.
+
+There is an [example](example) directory that shows how we might set this up but there are a few things missing
+(purposely done), this is so we can see how you design. The base of the project is there and can be used already but has
+no functional components in.
+
+Note that `go.mod` should not be copied from here it should be recreated in your own project, this is because of how go
+modules work.
+
+The project should utilise Docker and Docker-Compose. Using Docker for your own images that you create (**Consumer**,
+**API**, **Presenter**) and Docker-Compose for any other services you might want to use (e.g. Redis, MySQL, etc).
