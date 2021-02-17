@@ -78,6 +78,6 @@ func (r repository) GetItems(table string, index string, items interface{}) erro
 	return nil
 }
 
-func (r repository) SaveItem(table string, item interface{}) error {
+func (r repository) SaveItems(table string, item interface{}) error {
 	panic("")
 }

@@ -17,5 +17,5 @@ type Job struct {
 
 type Repository interface {
 	GetItems(table string, index string, items interface{}) error
-	SaveItem(table string, item interface{}) error
+	SaveItems(table string, item interface{}) error
 }
