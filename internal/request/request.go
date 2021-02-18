@@ -1,16 +1,15 @@
 package request
 
 import (
-	"encoding/json"
 	"io/ioutil"
 	"net/http"
 )
 
-func Get(url string, out interface{}) error {
+func Get(url string) ([]byte, error) {
 	resp, err := http.Get(url)
 
 	if err != nil {
-		return err
+		return nil, err
 	}
 
 	defer resp.Body.Close()
@@ -18,14 +17,8 @@ func Get(url string, out interface{}) error {
 	body, readErr := ioutil.ReadAll(resp.Body)
 
 	if readErr != nil {
-		return err
+		return nil, err
 	}
 
-	unmarshalErr := json.Unmarshal(body, &out)
-
-	if unmarshalErr != nil {
-		return err
-	}
-
-	return nil
+	return body, nil
 }
