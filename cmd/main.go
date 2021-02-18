@@ -8,6 +8,12 @@ import (
 var router *gin.Engine
 
 func main() {
+	//items, err := hackernews.GetItems()
+	//if err != nil {
+	//	logrus.WithError(err).Error("err getting items")
+	//}
+	//
+	//fmt.Println(items)
 	router = gin.Default()
 
 	initializeRoutes()
