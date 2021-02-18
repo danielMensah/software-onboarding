@@ -31,7 +31,9 @@ func GetItems() ([]repo.Item, error) {
 	for _, id := range itemIds {
 		var item repo.Item
 
-		rawData, reqErr := request.Get(getItemUrl(id))
+		url := fmt.Sprintf("%s%d.json", ItemAPI, id)
+
+		rawData, reqErr := request.Get(url)
 
 		if reqErr != nil {
 			logrus.WithError(err).Error("error fetching item")
@@ -45,8 +47,4 @@ func GetItems() ([]repo.Item, error) {
 	}
 
 	return items, nil
-}
-
-func getItemUrl(id int) string {
-	return fmt.Sprintf("%s%d.json", ItemAPI, id)
 }
