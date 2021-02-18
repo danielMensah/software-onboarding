@@ -19,16 +19,21 @@ var (
 )
 
 type DynamoConfig struct {
+	Table    string
 	Region   string
 	Endpoint string
 }
 
 type repository struct {
+	table string
 	client dynamodbiface.DynamoDBAPI
 }
 
 func NewDynamo(cfg DynamoConfig, client dynamodbiface.DynamoDBAPI) (repo.Repository, error) {
-	d := &repository{}
+
+	if cfg.Table == "" {
+		return nil, ErrTable
+	}
 
 	if cfg.Endpoint == "" {
 		return nil, ErrEndpoint
@@ -36,6 +41,10 @@ func NewDynamo(cfg DynamoConfig, client dynamodbiface.DynamoDBAPI) (repo.Reposit
 
 	if cfg.Region == "" {
 		return nil, ErrRegion
+	}
+
+	d := &repository{
+		table: cfg.Table,
 	}
 
 	if client != nil {
@@ -54,13 +63,9 @@ func NewDynamo(cfg DynamoConfig, client dynamodbiface.DynamoDBAPI) (repo.Reposit
 	return d, nil
 }
 
-func (r repository) GetItems(table string, index string, items interface{}) error {
-	if table == "" {
-		return ErrTable
-	}
-
+func (r repository) GetItems(index string, items *[]repo.Item) error {
 	query := &dynamodb.QueryInput{
-		TableName: &table,
+		TableName: &r.table,
 		IndexName: &index,
 	}
 
@@ -74,10 +79,9 @@ func (r repository) GetItems(table string, index string, items interface{}) erro
 		return fmt.Errorf("unmarshaling list of maps: %w", err)
 	}
 
-
 	return nil
 }
 
-func (r repository) SaveItems(table string, item interface{}) error {
+func (r repository) SaveItems(items []repo.Item) error {
 	panic("")
 }

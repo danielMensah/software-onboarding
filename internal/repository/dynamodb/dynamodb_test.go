@@ -7,6 +7,7 @@ import (
 	repo "github.com/gymshark/software-onboarding/internal/repository"
 	"github.com/stretchr/testify/assert"
 	"testing"
+	"time"
 )
 
 func TestNewDynamo(t *testing.T) {
@@ -24,8 +25,9 @@ func TestNewDynamo(t *testing.T) {
 			name: "should work as expected",
 			args: args{
 				cfg: DynamoConfig{
+					Table: "table",
 					Region:   "localhost",
-					Endpoint: "http://127.0.0.1:8000",
+					Endpoint: "endpoint",
 				},
 				client: nil,
 			},
@@ -35,8 +37,9 @@ func TestNewDynamo(t *testing.T) {
 			name: "should return error for missing region",
 			args: args{
 				cfg: DynamoConfig{
+					Table: "table",
 					Region:   "",
-					Endpoint: "http://127.0.0.1:8000",
+					Endpoint: "endpoint",
 				},
 				client: nil,
 			},
@@ -46,12 +49,25 @@ func TestNewDynamo(t *testing.T) {
 			name: "should return error for missing endpoint",
 			args: args{
 				cfg: DynamoConfig{
+					Table: "table",
 					Region:   "localhost",
 					Endpoint: "",
 				},
 				client: nil,
 			},
 			wantErr: ErrEndpoint,
+		},
+		{
+			name: "should return error for missing table",
+			args: args{
+				cfg: DynamoConfig{
+					Table: "",
+					Region:   "localhost",
+					Endpoint: "endpoint",
+				},
+				client: nil,
+			},
+			wantErr: ErrTable,
 		},
 	}
 	for _, tt := range tests {
@@ -78,16 +94,15 @@ func (m *mockDynamoDBClient) PutItem(input *dynamodb.PutItemInput) (*dynamodb.Pu
 
 func Test_repository_GetItems(t *testing.T) {
 	type args struct {
-		table string
 		index string
 		items interface{}
 	}
 	tests := []struct {
-		name    string
-		mockClient  *mockDynamoDBClient
-		args    args
-		want    []repo.Story
-		wantErr bool
+		name       string
+		mockClient *mockDynamoDBClient
+		args       args
+		want       []repo.Item
+		wantErr    bool
 	}{
 		{
 			name: "can get items",
@@ -102,6 +117,15 @@ func Test_repository_GetItems(t *testing.T) {
 								"title": {
 									S: aws.String("test"),
 								},
+								"text": {
+									S: aws.String("sample text"),
+								},
+								"type": {
+									S: aws.String("story"),
+								},
+								"time": {
+									S: aws.String("2021-02-13T00:00:00.00000Z"),
+								},
 								"url": {
 									S: aws.String("https://test.com"),
 								},
@@ -114,15 +138,17 @@ func Test_repository_GetItems(t *testing.T) {
 				},
 			},
 			args: args{
-				table: "stories",
 				index: "index",
 				items: nil,
 			},
-			want: []repo.Story{
+			want: []repo.Item{
 				{
-					Id:    "blah-blah",
+					ID:    "blah-blah",
 					Title: "test",
-					Url:   "https://test.com",
+					Text:  "sample text",
+					Type:  repo.ItemTypeStory,
+					Time:  time.Date(2021, 02, 13, 0, 0, 0, 0, time.UTC),
+					URL:   "https://test.com",
 					By:    "john doe",
 				},
 			},
@@ -144,11 +170,10 @@ func Test_repository_GetItems(t *testing.T) {
 				},
 			},
 			args: args{
-				table: "stories",
 				index: "index",
 				items: nil,
 			},
-			want: []repo.Story{{}},
+			want:    []repo.Item{{}},
 			wantErr: true,
 		},
 	}
@@ -158,9 +183,9 @@ func Test_repository_GetItems(t *testing.T) {
 				client: tt.mockClient,
 			}
 
-			var items []repo.Story
+			var items []repo.Item
 
-			err := r.GetItems(tt.args.table, tt.args.index, &items)
+			err := r.GetItems(tt.args.index, &items)
 
 			assert.True(t, (err != nil) == tt.wantErr)
 			assert.Equal(t, tt.want, items)
