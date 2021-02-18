@@ -27,7 +27,7 @@ func (i *Item) UnmarshalJSON(data []byte) error {
 	type Alias Item
 
 	aux := &struct {
-		ID int `json:"id"`
+		ID   int   `json:"id"`
 		Time int64 `json:"time"`
 		*Alias
 	}{
