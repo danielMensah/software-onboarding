@@ -13,11 +13,15 @@ const (
 	ItemAPI       = "https://hacker-news.firebaseio.com/v0/item/"
 )
 
-func GetItems() ([]repo.Item, error) {
+type HackerNewService struct {
+	request request.Service
+}
+
+func (h *HackerNewService) GetItems() ([]repo.Item, error) {
 	var itemIds []int
 	var items []repo.Item
 
-	data, err := request.Get(TopStoriesAPI)
+	data, err := h.request.Get(TopStoriesAPI)
 
 	if err != nil {
 		return nil, err
@@ -33,7 +37,7 @@ func GetItems() ([]repo.Item, error) {
 
 		url := fmt.Sprintf("%s%d.json", ItemAPI, id)
 
-		rawData, reqErr := request.Get(url)
+		rawData, reqErr := h.request.Get(url)
 
 		if reqErr != nil {
 			logrus.WithError(err).Error("error fetching item")

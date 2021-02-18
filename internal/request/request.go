@@ -5,7 +5,11 @@ import (
 	"net/http"
 )
 
-func Get(url string) ([]byte, error) {
+type Service struct {
+
+}
+
+func (s *Service) Get(url string) ([]byte, error) {
 	resp, err := http.Get(url)
 
 	if err != nil {
