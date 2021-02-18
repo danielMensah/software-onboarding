@@ -45,6 +45,6 @@ func (i *Item) UnmarshalJSON(data []byte) error {
 }
 
 type Repository interface {
-	GetItems(index string, items *[]Item) error
+	GetItems(index string, itemType string, items *[]Item) error
 	SaveItems(items []Item) error
 }

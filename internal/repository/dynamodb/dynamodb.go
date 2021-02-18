@@ -9,6 +9,7 @@ import (
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbattribute"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
+	"github.com/aws/aws-sdk-go/service/dynamodb/expression"
 	repo "github.com/gymshark/software-onboarding/internal/repository"
 )
 
@@ -25,7 +26,7 @@ type DynamoConfig struct {
 }
 
 type repository struct {
-	table string
+	table  string
 	client dynamodbiface.DynamoDBAPI
 }
 
@@ -63,10 +64,24 @@ func NewDynamo(cfg DynamoConfig, client dynamodbiface.DynamoDBAPI) (repo.Reposit
 	return d, nil
 }
 
-func (r repository) GetItems(index string, items *[]repo.Item) error {
+func (r repository) GetItems(index string, itemType string, items *[]repo.Item) error {
 	query := &dynamodb.QueryInput{
 		TableName: &r.table,
 		IndexName: &index,
+	}
+
+	if itemType != "" {
+		cond := expression.Key("type").Equal(expression.Value(itemType))
+
+		expr, err := expression.NewBuilder().WithKeyCondition(cond).Build()
+
+		if err != nil {
+			return fmt.Errorf("building expression: %w", err)
+		}
+
+		query.ExpressionAttributeNames = expr.Names()
+		query.ExpressionAttributeValues = expr.Values()
+		query.KeyConditionExpression = expr.KeyCondition()
 	}
 
 	result, err := r.client.Query(query)

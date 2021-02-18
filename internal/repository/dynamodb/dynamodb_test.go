@@ -95,6 +95,7 @@ func (m *mockDynamoDBClient) PutItem(input *dynamodb.PutItemInput) (*dynamodb.Pu
 func Test_repository_GetItems(t *testing.T) {
 	type args struct {
 		index string
+		itemType string
 		items interface{}
 	}
 	tests := []struct {
@@ -139,6 +140,7 @@ func Test_repository_GetItems(t *testing.T) {
 			},
 			args: args{
 				index: "index",
+				itemType: "",
 				items: nil,
 			},
 			want: []repo.Item{
@@ -171,6 +173,7 @@ func Test_repository_GetItems(t *testing.T) {
 			},
 			args: args{
 				index: "index",
+				itemType: "",
 				items: nil,
 			},
 			want:    []repo.Item{{}},
@@ -185,7 +188,7 @@ func Test_repository_GetItems(t *testing.T) {
 
 			var items []repo.Item
 
-			err := r.GetItems(tt.args.index, &items)
+			err := r.GetItems(tt.args.index, tt.args.itemType, &items)
 
 			assert.True(t, (err != nil) == tt.wantErr)
 			assert.Equal(t, tt.want, items)
