@@ -2,23 +2,20 @@ package main
 
 import (
 	"github.com/gin-gonic/gin"
+	"github.com/gymshark/software-onboarding/internal/reporter"
 	log "github.com/sirupsen/logrus"
 )
 
 var router *gin.Engine
 
 func main() {
-	//items, err := hackernews.GetItems()
-	//if err != nil {
-	//	logrus.WithError(err).Error("err getting items")
-	//}
-	//
-	//fmt.Println(items)
 	router = gin.Default()
+	// using middleware for custom errors
+	router.Use(reporter.ErrorReporter())
 
 	initializeRoutes()
 
- 	if err := router.Run(":8080"); err != nil {
+	if err := router.Run(":8080"); err != nil {
 		log.WithError(err).Error("running server")
 	}
 }
