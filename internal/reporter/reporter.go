@@ -9,17 +9,13 @@ import (
 type apiError struct {
 	Code    int    `json:"code"`
 	Message string `json:"message"`
-	error
+	Error   error
 }
 
 func ErrorReporter() gin.HandlerFunc {
-	return errorReporterT(gin.ErrorTypeAny)
-}
-
-func errorReporterT(errType gin.ErrorType) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		c.Next()
-		detectedErrors := c.Errors.ByType(errType)
+		detectedErrors := c.Errors.ByType(gin.ErrorTypeAny)
 
 		fmt.Println("Handle APP error")
 
@@ -28,14 +24,10 @@ func errorReporterT(errType gin.ErrorType) gin.HandlerFunc {
 
 			var parsedError *apiError
 
-			switch err.(type) {
-			case *apiError:
-				parsedError = err.(*apiError)
-			default:
-				parsedError = &apiError{
-					Code:    http.StatusInternalServerError,
-					Message: "Internal Server Error",
-				}
+			parsedError = &apiError{
+				Code:    http.StatusInternalServerError,
+				Message: "Internal Server Error",
+				Error:   err,
 			}
 
 			c.AbortWithStatusJSON(parsedError.Code, parsedError)
