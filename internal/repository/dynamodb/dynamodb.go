@@ -97,6 +97,7 @@ func (r repository) GetItems(index string, itemType string, items *[]repo.Item) 
 	return nil
 }
 
+// TODO: ensure to allow batching of 10 as BatchWriteItem can write 25 items at the time
 func (r repository) SaveItems(items []repo.Item) error {
 	convertedItems, err := dynamodbattribute.MarshalMap(items)
 
@@ -104,7 +105,6 @@ func (r repository) SaveItems(items []repo.Item) error {
 		return err
 	}
 
-	//fmt.Println(convertedItems)
 	_, err = r.client.BatchWriteItem(&dynamodb.BatchWriteItemInput{
 		RequestItems: map[string][]*dynamodb.WriteRequest{
 			r.table: {

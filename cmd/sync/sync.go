@@ -12,6 +12,7 @@ type service struct {
 }
 
 func (s *service) syncItems() error {
+	// TODO: take into consideration the last max id saved
 	items, err := s.api.GetItems()
 
 	if err != nil {
