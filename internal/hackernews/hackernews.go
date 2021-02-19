@@ -13,11 +13,23 @@ const (
 	ItemAPI       = "https://hacker-news.firebaseio.com/v0/item/"
 )
 
-type HackerNewService struct {
+type Service interface {
+	GetItems() ([]repo.Item, error)
+}
+
+type service struct {
 	request request.Service
 }
 
-func (h *HackerNewService) GetItems() ([]repo.Item, error) {
+func NewHackersService() (Service, error) {
+	h := &service{
+		request: request.Service{},
+	}
+
+	return h, nil
+}
+
+func (h *service) GetItems() ([]repo.Item, error) {
 	var itemIds []int
 	var items []repo.Item
 
