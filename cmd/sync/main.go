@@ -8,24 +8,28 @@ import (
 )
 
 func main() {
-	repo, err := dynamodb.NewDynamo(dynamodb.DynamoConfig{
+	repo, repoErr := dynamodb.NewDynamo(dynamodb.DynamoConfig{
 		Table:    os.Getenv("DYNAMO_TABLE"),
 		Region:   os.Getenv("DYNAMO_REGION"),
 		Endpoint: os.Getenv("DYNAMO_ENDPOINT"),
 	}, nil)
 
-	if err != nil {
-		logrus.WithError(err).Error("cannot initialise new dynamo")
+	if repoErr != nil {
+		logrus.WithError(repoErr).Error("cannot initialise new dynamo")
 		return
 	}
 
-	sync := service{
-		api:  hackernews.HackerNewService{},
-		repo: repo,
+	hackerService, hackerServiceErr := hackernews.NewHackersService()
+
+	if hackerServiceErr != nil {
+		logrus.WithError(hackerServiceErr).Error("cannot initialise new hacker news service")
+		return
 	}
 
+	sync := service{api: hackerService, repo: repo}
+
 	if syncErr := sync.syncItems(); syncErr != nil {
-		logrus.WithError(err).Error("error while syncing items")
+		logrus.WithError(syncErr).Error("error while syncing items")
 		return
 	}
 }
