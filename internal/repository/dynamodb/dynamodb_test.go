@@ -1,6 +1,7 @@
 package dynamodb
 
 import (
+	"errors"
 	"github.com/aws/aws-sdk-go/aws"
 	"github.com/aws/aws-sdk-go/service/dynamodb"
 	"github.com/aws/aws-sdk-go/service/dynamodb/dynamodbiface"
@@ -25,7 +26,7 @@ func TestNewDynamo(t *testing.T) {
 			name: "should work as expected",
 			args: args{
 				cfg: DynamoConfig{
-					Table: "table",
+					Table:    "table",
 					Region:   "localhost",
 					Endpoint: "endpoint",
 				},
@@ -37,7 +38,7 @@ func TestNewDynamo(t *testing.T) {
 			name: "should return error for missing region",
 			args: args{
 				cfg: DynamoConfig{
-					Table: "table",
+					Table:    "table",
 					Region:   "",
 					Endpoint: "endpoint",
 				},
@@ -49,7 +50,7 @@ func TestNewDynamo(t *testing.T) {
 			name: "should return error for missing endpoint",
 			args: args{
 				cfg: DynamoConfig{
-					Table: "table",
+					Table:    "table",
 					Region:   "localhost",
 					Endpoint: "",
 				},
@@ -61,7 +62,7 @@ func TestNewDynamo(t *testing.T) {
 			name: "should return error for missing table",
 			args: args{
 				cfg: DynamoConfig{
-					Table: "",
+					Table:    "",
 					Region:   "localhost",
 					Endpoint: "endpoint",
 				},
@@ -79,24 +80,24 @@ func TestNewDynamo(t *testing.T) {
 }
 
 type mockDynamoDBClient struct {
-	getItemsFunc  func(input *dynamodb.QueryInput) (*dynamodb.QueryOutput, error)
-	saveItemError error
+	queryFunc  func(input *dynamodb.QueryInput) (*dynamodb.QueryOutput, error)
+	batchWriteError error
 	dynamodbiface.DynamoDBAPI
 }
 
 func (m *mockDynamoDBClient) Query(input *dynamodb.QueryInput) (*dynamodb.QueryOutput, error) {
-	return m.getItemsFunc(input)
+	return m.queryFunc(input)
 }
 
-func (m *mockDynamoDBClient) PutItem(input *dynamodb.PutItemInput) (*dynamodb.PutItemOutput, error) {
-	return nil, m.saveItemError
+func (m *mockDynamoDBClient) BatchWriteItem(input *dynamodb.BatchWriteItemInput) (*dynamodb.BatchWriteItemOutput, error) {
+	return nil, m.batchWriteError
 }
 
 func Test_repository_GetItems(t *testing.T) {
 	type args struct {
-		index string
+		index    string
 		itemType string
-		items interface{}
+		items    interface{}
 	}
 	tests := []struct {
 		name       string
@@ -108,7 +109,7 @@ func Test_repository_GetItems(t *testing.T) {
 		{
 			name: "can get items",
 			mockClient: &mockDynamoDBClient{
-				getItemsFunc: func(input *dynamodb.QueryInput) (*dynamodb.QueryOutput, error) {
+				queryFunc: func(input *dynamodb.QueryInput) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{
 						Items: []map[string]*dynamodb.AttributeValue{
 							{
@@ -139,9 +140,9 @@ func Test_repository_GetItems(t *testing.T) {
 				},
 			},
 			args: args{
-				index: "index",
+				index:    "index",
 				itemType: "",
-				items: nil,
+				items:    nil,
 			},
 			want: []repo.Item{
 				{
@@ -159,7 +160,7 @@ func Test_repository_GetItems(t *testing.T) {
 		{
 			name: "error unmarshalling",
 			mockClient: &mockDynamoDBClient{
-				getItemsFunc: func(input *dynamodb.QueryInput) (*dynamodb.QueryOutput, error) {
+				queryFunc: func(input *dynamodb.QueryInput) (*dynamodb.QueryOutput, error) {
 					return &dynamodb.QueryOutput{
 						Items: []map[string]*dynamodb.AttributeValue{
 							{
@@ -172,9 +173,9 @@ func Test_repository_GetItems(t *testing.T) {
 				},
 			},
 			args: args{
-				index: "index",
+				index:    "index",
 				itemType: "",
-				items: nil,
+				items:    nil,
 			},
 			want:    []repo.Item{{}},
 			wantErr: true,
@@ -192,6 +193,82 @@ func Test_repository_GetItems(t *testing.T) {
 
 			assert.True(t, (err != nil) == tt.wantErr)
 			assert.Equal(t, tt.want, items)
+		})
+	}
+}
+
+func Test_repository_SaveItems(t *testing.T) {
+	type fields struct {
+		table  string
+		client *mockDynamoDBClient
+	}
+	type args struct {
+		items []repo.Item
+	}
+	tests := []struct {
+		name    string
+		fields  fields
+		args    args
+		want    []repo.Item
+		wantErr bool
+	}{
+		{
+			name: "can save items",
+			fields: fields{
+				table: "Items",
+				client: &mockDynamoDBClient{
+					batchWriteError: nil,
+				},
+			},
+			args: args{
+				items: []repo.Item{
+					{
+						ID:    "abc",
+						Title: "some title",
+						Text:  "some text",
+						Type:  "story",
+						Time:  time.Now(),
+						URL:   "https://some.com",
+						By:    "Daniel",
+					},
+				},
+			},
+			wantErr: false,
+		},
+		{
+			name: "cannot save items",
+			fields: fields{
+				table: "Items",
+				client: &mockDynamoDBClient{
+					batchWriteError: errors.New("test error"),
+				},
+			},
+			args: args{
+				items: []repo.Item{
+					{
+						ID:    "abc",
+						Title: "some title",
+						Text:  "some text",
+						Type:  "story",
+						Time:  time.Now(),
+						URL:   "https://some.com",
+						By:    "Daniel",
+					},
+				},
+			},
+			wantErr: true,
+		},
+	}
+	for _, tt := range tests {
+		t.Run(tt.name, func(t *testing.T) {
+			r := repository{
+				table:  tt.fields.table,
+				client: tt.fields.client,
+			}
+
+			err := r.SaveItems(tt.args.items)
+
+			assert.True(t, (err != nil) == tt.wantErr)
 		})
 	}
 }

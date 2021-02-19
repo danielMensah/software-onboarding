@@ -98,5 +98,28 @@ func (r repository) GetItems(index string, itemType string, items *[]repo.Item) 
 }
 
 func (r repository) SaveItems(items []repo.Item) error {
-	panic("")
+	convertedItems, err := dynamodbattribute.MarshalMap(items)
+
+	if err != nil {
+		return err
+	}
+
+	//fmt.Println(convertedItems)
+	_, err = r.client.BatchWriteItem(&dynamodb.BatchWriteItemInput{
+		RequestItems: map[string][]*dynamodb.WriteRequest{
+			r.table: {
+				&dynamodb.WriteRequest{
+					PutRequest: &dynamodb.PutRequest{
+						Item: convertedItems,
+					},
+				},
+			},
+		},
+	})
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
