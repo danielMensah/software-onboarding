@@ -2,6 +2,7 @@ package repository
 
 import (
 	"encoding/json"
+	"github.com/gymshark/software-onboarding/internal/repository/dynamodb"
 	"strconv"
 	"time"
 )
@@ -47,4 +48,8 @@ func (i *Item) UnmarshalJSON(data []byte) error {
 type Repository interface {
 	GetItems(index string, itemType string, items *[]Item) error
 	SaveItems(items []Item) error
+}
+
+func New(config dynamodb.DynamoConfig) (Repository, error) {
+	return dynamodb.NewDynamo(config, nil)
 }
