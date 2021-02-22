@@ -1,18 +1,15 @@
 package main
 
 import (
+	"github.com/gymshark/software-onboarding/internal/config"
 	"github.com/gymshark/software-onboarding/internal/hackernews"
-	"github.com/gymshark/software-onboarding/internal/repository/dynamodb"
+	"github.com/gymshark/software-onboarding/internal/repository"
 	"github.com/sirupsen/logrus"
-	"os"
 )
 
 func main() {
-	repo, repoErr := dynamodb.NewDynamo(dynamodb.DynamoConfig{
-		Table:    os.Getenv("DYNAMO_TABLE"),
-		Region:   os.Getenv("DYNAMO_REGION"),
-		Endpoint: os.Getenv("DYNAMO_ENDPOINT"),
-	}, nil)
+	cfg := config.New()
+	repo, repoErr := repository.New(cfg)
 
 	if repoErr != nil {
 		logrus.WithError(repoErr).Error("cannot initialise new dynamo")
